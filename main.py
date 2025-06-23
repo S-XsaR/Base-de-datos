@@ -706,8 +706,6 @@ class RefugeeManagementApp:
         ttk.Button(report_frame, text="Voluntarios por Ciudad", 
                   command=self.generate_volunteers_by_city_report).pack(pady=5, fill="x", padx=20)
         
-        ttk.Button(report_frame, text="Actualizar Estadísticas de Albergues", 
-                  command=self.execute_shelter_stats_procedure).pack(pady=5, fill="x", padx=20)
         
         # Área para mostrar resultados
         self.report_text = tk.Text(report_frame, height=20, wrap="word")
@@ -1151,35 +1149,6 @@ class RefugeeManagementApp:
         except Error as e:
             messagebox.showerror("Error", f"Error al generar reporte: {e}")
 
-    def execute_shelter_stats_procedure(self):
-        try:
-            cursor = self.db_connection.cursor()
-            
-            # Ejecutar el procedimiento almacenado
-            cursor.callproc("ActualizarEstadisticasAlbergues")
-            self.db_connection.commit()
-            
-            # Mostrar resultados actualizados
-            cursor.execute("""
-                SELECT a.nombre, c.ciudad, a.personas_albergadas, a.ciudad_de_procedencia
-                FROM albergues a
-                JOIN ciudades c ON a.id_ciudad = c.id_ciudad
-                ORDER BY a.personas_albergadas DESC
-            """)
-            results = cursor.fetchall()
-            
-            self.report_text.delete(1.0, tk.END)
-            self.report_text.insert(tk.END, "ESTADÍSTICAS ACTUALIZADAS DE ALBERGUES\n\n")
-            self.report_text.insert(tk.END, "Albergue (Ciudad)\t\tPersonas\tCiudad de Procedencia\n")
-            self.report_text.insert(tk.END, "="*80 + "\n")
-            
-            for row in results:
-                self.report_text.insert(tk.END, f"{row[0]} ({row[1]})\t\t{row[2]}\t\t{row[3]}\n")
-            
-            cursor.close()
-            messagebox.showinfo("Éxito", "Estadísticas de albergues actualizadas correctamente")
-        except Error as e:
-            messagebox.showerror("Error", f"Error al ejecutar procedimiento: {e}")
 
 if __name__ == "__main__":
     root = tk.Tk()
